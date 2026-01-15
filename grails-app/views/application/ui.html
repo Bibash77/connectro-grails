@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Elasticsearch UI Project</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
+        h1 { margin-bottom: 20px; }
+        .section { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { padding: 8px 12px; margin-top: 10px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        input, select, textarea { padding: 6px; margin: 5px 0; width: 100%; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { text-align: left; padding: 8px; border: 1px solid #ddd; }
+        th { background-color: #f0f0f0; }
+        .filter-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .filter-row input { flex: 1; }
+        canvas { max-width: 800px; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+<h1>Elasticsearch API UI</h1>
+
+<!-- 1. Average Rating by City -->
+<div class="section">
+    <h2>1. Average Rating by City (GET)</h2>
+    <p>Displays the average rating of companies grouped by city.</p>
+    <button onclick="fetchAverageRating()">Fetch</button>
+    <table id="avgRatingTable"></table>
+    <canvas id="avgRatingChart"></canvas>
+</div>
+
+<!-- 2. Year-wise Company Creation Histogram -->
+<div class="section">
+    <h2>2. Year-wise Company Creation Histogram</h2>
+    <p>Displays the number of companies created per year, optionally filtered.</p>
+    <div class="filter-row">
+        <input id="histogramFilterName" placeholder="Filter Name (e.g., tags)" />
+        <input id="histogramFilterValue" placeholder="Filter Value (e.g., wifi)" />
+    </div>
+    <button onclick="fetchHistogram()">Fetch</button>
+    <table id="histogramTable"></table>
+    <canvas id="histogramChart"></canvas>
+</div>
+
+<!-- 3. Rating-wise Stats by Category -->
+<div class="section">
+    <h2>3. Rating-wise Stats</h2>
+    <p>Shows average, min, max ratings grouped by category.</p>
+    <button onclick="fetchRatingStats()">Fetch</button>
+    <table id="ratingStatsTable"></table>
+    <canvas id="ratingStatsChart"></canvas>
+</div>
+
+<!-- 4. Cardinal Tags Filtered -->
+<div class="section">
+    <h2>4. Cardinal Tags Filtered (Fetch tags overview over the range period of time) </h2>
+    <p>Displays tags based on selected cities and date range.</p>
+    <label>Cities (comma separated):</label>
+    <input id="tagCities" value="Kathmandu,Pokhara,Lalitpur" />
+    <label>From Date:</label>
+    <input id="fromDate" type="date" value="2025-06-01" />
+    <label>To Date:</label>
+    <input id="toDate" type="date" value="2025-06-25" />
+    <label>Verified:</label>
+    <select id="verified">
+        <option value="true">True</option>
+        <option value="false">False</option>
+    </select>
+    <button onclick="fetchCardinalTags()">Fetch</button>
+    <table id="cardinalTagsTable"></table>
+    <canvas id="tagChart"></canvas>
+</div>
+
+<!-- 5. City-wise Top N Records Filtered with Dynamic Filters -->
+<div class="section">
+    <h2>5. City-wise Top N Records Filtered</h2>
+    <p>Get the top N rated companies in each city based on optional filters such as category, verification, and cost threshold.</p>
+    <label>Max Avg Cost:</label>
+    <input id="maxAvgCost" value="1000" />
+    <label>Top N:</label>
+    <input id="topN" value="1" />
+    <div id="dynamicFilters"></div>
+    <button onclick="addFilterRow()">Add Filter</button>
+    <button onclick="fetchTopNCompanies()">Fetch</button>
+    <div class="results" id="topNResult"></div>
+    <canvas id="topNChart"></canvas>
+</div>
+
+<script>
+    const apiBase = "http://localhost:8080";
+
+    function buildTable(data, columns) {
+        const table = document.createElement("table");
+        const header = table.insertRow();
+        columns.forEach(col => header.insertCell().textContent = col);
+        data.forEach(row => {
+            const tr = table.insertRow();
+            columns.forEach(col => tr.insertCell().textContent = row[col] ?? '');
+        });
+        return table.outerHTML;
+    }
+
+    async function fetchAverageRating() {
+        const res = await fetch(`${apiBase}/search/average-rating-by-city`);
+        const json = await res.json();
+        const data = json.data || [];
+        document.getElementById("avgRatingTable").innerHTML = buildTable(data, ["city", "avg_rating", "docCount"]);
+
+        const ctx = document.getElementById("avgRatingChart");
+        ctx.style.display = "block";
+        if (window.avgChart instanceof Chart) window.avgChart.destroy();
+        window.avgChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.city),
+                datasets: [{
+                    label: 'Average Rating',
+                    data: data.map(d => d.avg_rating),
+                    backgroundColor: '#17a2b8'
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, max: 5 } } }
+        });
+    }
+
+    async function fetchHistogram() {
+        const name = document.getElementById("histogramFilterName").value;
+        let value = document.getElementById("histogramFilterValue").value;
+        if (value === "true") value = true;
+        else if (value === "false") value = false;
+
+        const res = await fetch(`${apiBase}/search/histogram/year-wise-company-creation`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, value })
+        });
+        const json = await res.json();
+        const data = json.data || [];
+        document.getElementById("histogramTable").innerHTML = buildTable(data, ["year", "registeredCompanies"]);
+
+        const ctx = document.getElementById("histogramChart");
+        ctx.style.display = "block";
+        if (window.histogramChart instanceof Chart) window.histogramChart.destroy();
+        window.histogramChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.year),
+                datasets: [{
+                    label: 'Registered Companies',
+                    data: data.map(d => d.registeredCompanies),
+                    backgroundColor: '#ffc107'
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    async function fetchRatingStats() {
+        const res = await fetch(`${apiBase}/search/rating-wise-stats`);
+        const json = await res.json();
+        const data = json.data || [];
+        document.getElementById("ratingStatsTable").innerHTML = buildTable(data, ["category", "avg", "min", "max", "docCount"]);
+
+        const ctx = document.getElementById("ratingStatsChart");
+        ctx.style.display = "block";
+        if (window.ratingStatsChart instanceof Chart) {
+            window.ratingStatsChart.destroy();
+        }
+        window.ratingStatsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.category),
+                datasets: [{
+                    label: 'Average Rating',
+                    data: data.map(d => d.avg),
+                    backgroundColor: '#28a745'
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, max: 5 } } }
+        });
+    }
+
+    async function fetchCardinalTags() {
+        const cities = document.getElementById("tagCities").value.split(",").map(c => c.trim());
+        const from = document.getElementById("fromDate").value;
+        const to = document.getElementById("toDate").value;
+        const verified = document.getElementById("verified").value === "true";
+
+        const res = await fetch(`${apiBase}/search/cardinal-tags-filtered`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cities, createdAtFromDate: from, createdAtToDate: to, verified })
+        });
+        const json = await res.json();
+        const data = json.data?.filter(d => d.tag) || [];
+        document.getElementById("cardinalTagsTable").innerHTML = buildTable(data, ["tag", "docCount"]);
+
+        const ctx = document.getElementById("tagChart");
+        ctx.style.display = "block";
+        if (window.tagChart instanceof Chart) window.tagChart.destroy();
+        window.tagChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: data.map(d => d.tag),
+                datasets: [{
+                    label: 'Tag Frequency',
+                    data: data.map(d => d.docCount),
+                    backgroundColor: data.map((_, i) => `hsl(${i * 30}, 70%, 60%)`)
+                }]
+            },
+            options: { responsive: true }
+        });
+    }
+
+    async function fetchTopNCompanies() {
+        const maxAvgCost = parseFloat(document.getElementById("maxAvgCost").value);
+        const topN = parseInt(document.getElementById("topN").value);
+        const filterElements = document.querySelectorAll("#dynamicFilters .filter-row");
+        const filters = Array.from(filterElements).map(row => {
+            const key = row.querySelector(".filter-name").value;
+            let val = row.querySelector(".filter-value").value;
+            if (val === "true") val = true;
+            else if (val === "false") val = false;
+            return { name: key, value: val };
+        });
+
+        const res = await fetch(`${apiBase}/search/city-wise-top-n-records-filtered`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ maxAvgCost, topN, filters })
+        });
+        const json = await res.json();
+        const data = json.data?.data || [];
+
+        const container = document.getElementById("topNResult");
+        container.innerHTML = "";
+        const labels = [];
+        const ratings = [];
+
+        data.forEach(cityEntry => {
+            const city = cityEntry.city;
+            labels.push(city);
+            const companies = cityEntry.companies || [];
+            const tableHTML = buildTable(companies, ["company_name", "address", "average_cost", "rating"]);
+            const section = document.createElement("div");
+            section.innerHTML = `<h4>${city}</h4>${tableHTML}`;
+            container.appendChild(section);
+            ratings.push(companies[0]?.rating || 0);
+        });
+
+        const ctx = document.getElementById("topNChart");
+        ctx.style.display = "block";
+        if (window.topNChartInstance instanceof Chart) window.topNChartInstance.destroy();
+
+        window.topNChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Top Company Rating by City',
+                    data: ratings,
+                    backgroundColor: '#007BFF'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, max: 5 } }
+            }
+        });
+    }
+
+    function addFilterRow() {
+        const container = document.getElementById("dynamicFilters");
+        const row = document.createElement("div");
+        row.className = "filter-row";
+        row.innerHTML = `
+            <input class="filter-name" placeholder="Filter Name (e.g., category)" />
+            <input class="filter-value" placeholder="Value (e.g., Healthcare or true)" />
+        `;
+        container.appendChild(row);
+    }
+</script>
+</body>
+</html>

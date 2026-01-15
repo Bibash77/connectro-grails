@@ -1,0 +1,118 @@
+info:
+  app:
+    name: '@info.app.name@'
+    version: '@info.app.version@'
+    grailsVersion: '@info.app.grailsVersion@'
+dataSource:
+  driverClassName: org.h2.Driver
+  username: sa
+  password: ''
+  pooled: true
+  jmxExport: true
+environments:
+  development:
+    dataSource:
+      pooled: true
+      driverClassName: com.mysql.cj.jdbc.Driver
+      username: root
+      password: root
+      dbCreate: update
+      url: jdbc:mysql://localhost:3306/connectro
+      logSql: true
+      formatSql: true
+
+  test:
+    dataSource:
+      dbCreate: update
+      url: jdbc:h2:mem:testDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+  production:
+    dataSource:
+      dbCreate: none
+      url: jdbc:h2:./prodDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      properties:
+        jmxEnabled: true
+        initialSize: 5
+        maxActive: 50
+        minIdle: 5
+        maxIdle: 25
+        maxWait: 10000
+        maxAge: 600000
+        timeBetweenEvictionRunsMillis: 5000
+        minEvictableIdleTimeMillis: 60000
+        validationQuery: SELECT 1
+        validationQueryTimeout: 3
+        validationInterval: 15000
+        testOnBorrow: true
+        testWhileIdle: true
+        testOnReturn: false
+        jdbcInterceptors: ConnectionState
+        defaultTransactionIsolation: 2
+hibernate:
+  dialect: org.hibernate.dialect.MySQL8Dialect
+  cache:
+    queries: false
+    use_second_level_cache: false
+    use_query_cache: false
+grails:
+  cors:
+    enabled: true
+  spring:
+    bean-packages:
+      - configurations
+      - service
+  exception resolver:
+    params:
+      exclude:
+        - password
+        - viewName
+  mime:
+    disable:
+      accept:
+        header:
+          userAgents:
+          - Gecko
+          - WebKit
+          - Presto
+          - Trident
+    types:
+      json:
+      - application/json
+      - text/json
+      hal:
+      - application/hal+json
+      - application/hal+xml
+      xml:
+      - text/xml
+      - application/xml
+      atom: application/atom+xml
+      css: text/css
+      csv: text/csv
+      js: text/javascript
+      rss: application/rss+xml
+      text: text/plain
+      all: '*/*'
+  views:
+    default:
+      codec: html
+  codegen:
+    defaultPackage: connectro.rest
+  profile: rest-api
+logging:
+  level:
+    org.grails.orm.hibernate: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.tool.hbm2ddl: DEBUG
+    org.hibernate: DEBUG
+    org.grails.datastore.mapping.model: TRACE
+    org.grails.orm.support: DEBUG
+    connectro.rest: DEBUG
+    org.grails: DEBUG
+elasticsearch:
+  host: localhost
+  port: 9200
+  scheme: http
+  apiKey: elBmUmpKY0J4VjJhYkwtTE43Mk06bDhCREthNFhTc2VEWTZ6UEJNZ3d3UQ==
+  showsql: true
+
+
+
