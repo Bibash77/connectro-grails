@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import service.V0SearchService
 
 /**
@@ -16,6 +19,8 @@ import service.V0SearchService
  * Handles: search/listings, nearby, category suggestions
  * Thin controller - all logic in service layer
  */
+@RestController
+@RequestMapping("/api/search")
 @Tag(name = "Search", description = "Search endpoints for business listings")
 class SearchController {
 
@@ -32,6 +37,7 @@ class SearchController {
      * - page: page number (default: 0)
      * - size: page size (default: 10)
      */
+    @GetMapping("/listings")
     @Operation(
         summary = "Search listings",
         description = "Search business listings with free text query, city filter, and optional category filter. Uses multi-match on name, normalized_name, category, category_tokens, and tags with boosted scoring.",
@@ -84,6 +90,7 @@ class SearchController {
      * - distance: distance radius (default: 5km)
      * - size: result size (default: 10)
      */
+    @GetMapping("/nearby")
     @Operation(
         summary = "Find nearby listings",
         description = "Search for business listings within a specified distance from given coordinates. Results are sorted by distance (nearest first).",
@@ -137,6 +144,7 @@ class SearchController {
      * Query Params:
      * - q: partial keyword (optional)
      */
+    @GetMapping("/categories")
     @Operation(
         summary = "Get category suggestions",
         description = "Retrieve category suggestions using fuzzy matching on category and category_tokens fields. Useful for autocomplete/typeahead functionality.",
