@@ -1,7 +1,7 @@
 package connectro.rest
 
 import constants.ApplicationConstants
-import dto.ApiResponse
+import dto.ApiRenderResponse
 import dto.CardinalTagsCityWiseInSpecificDate
 import dto.CityWiseFilteredRecordDto
 import dto.Filter
@@ -19,7 +19,7 @@ class SearchExecutionController {
     def search(Long id) {
         def view = UserSavedView.get(id)
         if (!view) {
-            render new ApiResponse("UserSavedView not found with ID: $id", false) as JSON
+            render new ApiRenderResponse("UserSavedView not found with ID: $id", false) as JSON
             return
         }
 
@@ -36,7 +36,7 @@ class SearchExecutionController {
 
         def result = elasticQueryService.searchAverageRatingByCity();
 
-        render new ApiResponse(result, "Data fetched") as JSON
+        render new ApiRenderResponse(result, "Data fetched") as JSON
     }
 
     def yearWiseCompanyCreation() {
@@ -46,12 +46,12 @@ class SearchExecutionController {
         def filterMap = filterDto.properties.subMap(['name', 'value'])
         def result = elasticQueryService.searchYearWiseCompanyCreation(filterMap);
 
-        render new ApiResponse(result, "Data fetched") as JSON
+        render new ApiRenderResponse(result, "Data fetched") as JSON
     }
 
     def ratingWiseStatsData() {
         def result = elasticQueryService.searchRatingStatsByCategory();
-        render new ApiResponse(result, "Data fetched") as JSON
+        render new ApiRenderResponse(result, "Data fetched") as JSON
     }
 
 
@@ -64,7 +64,7 @@ class SearchExecutionController {
                 filterDto.createdAtToDate,
                 filterDto.verified
         )
-        render new ApiResponse(result, "Data fetched") as JSON
+        render new ApiRenderResponse(result, "Data fetched") as JSON
     }
 
     def findCityWiseTopRatedCompaniesWithPriceFilter() {
@@ -90,7 +90,7 @@ class SearchExecutionController {
                 normalizedFilters,
                 filterDto.topN
         )
-        render new ApiResponse(result, "Data fetched") as JSON
+        render new ApiRenderResponse(result, "Data fetched") as JSON
 
     }
 
@@ -106,7 +106,7 @@ class SearchExecutionController {
                 filterDto.size
         )
 
-        render new ApiResponse(result, "Nearby companies fetched") as JSON
+        render new ApiRenderResponse(result, "Nearby companies fetched") as JSON
     }
 
 }

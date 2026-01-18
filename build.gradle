@@ -75,8 +75,8 @@ dependencies {
     implementation 'jakarta.json:jakarta.json-api:2.0.1'
     implementation 'org.glassfish:jakarta.json:2.0.1'
 
-    // SpringDoc OpenAPI (Swagger)
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    // SpringDoc OpenAPI (Swagger) - Version 1.8.0 supports Java 11
+    implementation 'org.springdoc:springdoc-openapi-ui:1.8.0'
 
 
 
@@ -94,6 +94,7 @@ application {
 
 java {
     sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
 }
 
 

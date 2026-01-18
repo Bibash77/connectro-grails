@@ -1,9 +1,7 @@
 package connectro.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import dto.ApiResponse
 import dto.UserSavedViewDto
-import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j;
 

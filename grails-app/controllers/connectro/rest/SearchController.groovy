@@ -1,13 +1,11 @@
 package connectro.rest
 
-import dto.ApiResponse
+import dto.ApiRenderResponse
 import dto.SearchListingsRequest
 import dto.NearbyRequest
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -60,18 +58,18 @@ class SearchController {
             )
 
             if (!request.city) {
-                render new ApiResponse("City parameter is required", false) as JSON
+                render new ApiRenderResponse("City parameter is required", false) as JSON
                 return
             }
 
             def response = v0SearchService.searchListings(request)
-            render new ApiResponse(response, "Listings fetched successfully") as JSON
+            render new ApiRenderResponse(response, "Listings fetched successfully") as JSON
 
         } catch (IllegalArgumentException e) {
-            render new ApiResponse(e.message, false) as JSON
+            render new ApiRenderResponse(e.message, false) as JSON
         } catch (Exception e) {
             log.error("Error searching listings: ${e.message}", e)
-            render new ApiResponse("Error searching listings: ${e.message}", false) as JSON
+            render new ApiRenderResponse("Error searching listings: ${e.message}", false) as JSON
         }
     }
 
@@ -112,23 +110,23 @@ class SearchController {
             )
 
             if (!request.city) {
-                render new ApiResponse("City parameter is required", false) as JSON
+                render new ApiRenderResponse("City parameter is required", false) as JSON
                 return
             }
 
             if (request.lat == null || request.lon == null) {
-                render new ApiResponse("Latitude and longitude parameters are required", false) as JSON
+                render new ApiRenderResponse("Latitude and longitude parameters are required", false) as JSON
                 return
             }
 
             def listings = v0SearchService.searchNearby(request)
-            render new ApiResponse(listings, "Nearby listings fetched successfully") as JSON
+            render new ApiRenderResponse(listings, "Nearby listings fetched successfully") as JSON
 
         } catch (IllegalArgumentException e) {
-            render new ApiResponse(e.message, false) as JSON
+            render new ApiRenderResponse(e.message, false) as JSON
         } catch (Exception e) {
             log.error("Error searching nearby listings: ${e.message}", e)
-            render new ApiResponse("Error searching nearby listings: ${e.message}", false) as JSON
+            render new ApiRenderResponse("Error searching nearby listings: ${e.message}", false) as JSON
         }
     }
 
@@ -153,11 +151,11 @@ class SearchController {
         try {
             String query = params.q
             def response = v0SearchService.getCategorySuggestions(query)
-            render new ApiResponse(response, "Category suggestions fetched successfully") as JSON
+            render new ApiRenderResponse(response, "Category suggestions fetched successfully") as JSON
 
         } catch (Exception e) {
             log.error("Error fetching category suggestions: ${e.message}", e)
-            render new ApiResponse("Error fetching category suggestions: ${e.message}", false) as JSON
+            render new ApiRenderResponse("Error fetching category suggestions: ${e.message}", false) as JSON
         }
     }
 }

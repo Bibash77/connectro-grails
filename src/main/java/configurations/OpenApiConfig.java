@@ -31,24 +31,21 @@ public class OpenApiConfig {
                 .name("MIT License")
                 .url("https://opensource.org/licenses/MIT");
 
+        String description = "V0 MVP REST API for location-based business listings search in Nepal.\n\n" +
+                "## Features\n" +
+                "- Elasticsearch-powered search\n" +
+                "- Geo-based nearby search\n" +
+                "- Category suggestions with fuzzy matching\n" +
+                "- Health monitoring endpoints\n\n" +
+                "## Authentication\n" +
+                "No authentication required for V0 MVP.\n\n" +
+                "## Base URL\n" +
+                "All endpoints are prefixed with the API base URL.";
+
         Info info = new Info()
                 .title("Connectro REST API")
                 .version("v0")
-                .description("""
-                        V0 MVP REST API for location-based business listings search in Nepal.
-                        
-                        ## Features
-                        - Elasticsearch-powered search
-                        - Geo-based nearby search
-                        - Category suggestions with fuzzy matching
-                        - Health monitoring endpoints
-                        
-                        ## Authentication
-                        No authentication required for V0 MVP.
-                        
-                        ## Base URL
-                        All endpoints are prefixed with the API base URL.
-                        """)
+                .description(description)
                 .contact(contact)
                 .license(license);
 

@@ -1,14 +1,10 @@
 package spring
 
 beans = {
-
+    // JsonSlurper can be shared as a singleton
     jsonSlurper(groovy.json.JsonSlurper)
-    elasticQueryService(service.ElasticQueryService)
-
-
-    // manually create instance of your config class
-    elasticSearchConfig(configurations.ElasticSearchConfig)
-
-
-
+    
+    // ElasticQueryService - removed (handled by @Service annotation in Java class)
+    // ElasticSearchConfig - removed (handled by @Configuration annotation in Java class)
+    // V0SearchService - automatically created via @Service annotation + component scanning
 }
